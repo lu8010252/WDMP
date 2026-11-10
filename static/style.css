@@ -70,6 +70,11 @@ input, select, textarea { font-family: inherit; }
   width: 100%; padding: 11px 12px; border: 1px solid var(--line); border-radius: var(--radius);
   font-size: 15px; background: #fff; color: var(--text);
 }
+/* 复选框/单选框不能吃 .field input 的 width:100%,否则在 flex 行里会被拉得很宽、把文字挤到最右边 */
+.field input[type="checkbox"], .field input[type="radio"] {
+  width: 16px; height: 16px; padding: 0; margin: 0; flex: 0 0 auto; accent-color: var(--cyan);
+}
+.field label:has(> input[type="checkbox"]), .field label:has(> input[type="radio"]) { color: var(--text); cursor: pointer; }
 .field input:focus, .field select:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(15,155,176,0.12); }
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
