@@ -17,28 +17,39 @@
 ├── main.go / db.go / auth.go ...   # Go 后端源码(按模块拆分)
 ├── static/                         # 前端静态资源(index.html / style.css / app*.js)
 ├── Dockerfile                      # 多阶段构建,最终基于 alpine
+├── .github/workflows/docker.yml    # 推送后自动构建并发布镜像到 ghcr
 ├── docker-compose.yml              # 附带内存限制与数据卷映射
 └── go.mod / go.sum
 ```
 
-## 快速开始(Docker Compose,推荐)
+## 快速开始(Docker Compose,推荐,无需下载源码)
+
+镜像由 GitHub Actions 自动构建(amd64 / arm64 / armv7),发布在 `ghcr.io/lu8010252/wdmp:latest`。
+新建一个文件夹,把仓库里的 `docker-compose.yml` 内容存进去,改好 `ADMIN_INIT_PASSWORD` 后:
 
 ```bash
-# 1. 解压项目后进入目录
-cd wdmp
-
-# 2. (可选)修改 docker-compose.yml 中的 ADMIN_INIT_PASSWORD 为自己的初始密码
-# 3. 构建并启动
-docker compose up -d --build
-
-# 4. 查看日志确认启动成功
-docker compose logs -f
+docker compose up -d
+docker compose logs -f      # 查看日志确认启动成功
 ```
 
-启动后访问 `http://<你的VPS_IP>:8080` 即可。
+更新到最新版:
+
+```bash
+docker compose pull && docker compose up -d
+```
+
+启动后访问 `http://<你的服务器IP>:8080` 即可。
 
 默认管理员账号:`admin`,默认密码:`admin123`(或你在 compose 文件里设置的 `ADMIN_INIT_PASSWORD`),
 **首次登录后请立即在"用户管理"中新增自己的账号或重置 admin 密码**。
+
+### 想自己从源码编译
+
+```bash
+git clone https://github.com/lu8010252/wdmp && cd wdmp
+# 编辑 docker-compose.yml:注释掉 image 行,取消 "build: ." 的注释
+docker compose up -d --build
+```
 
 ## 快速开始(纯 Docker 命令)
 
@@ -98,15 +109,15 @@ DATA_DIR=./data ADMIN_INIT_PASSWORD=admin123 ./wdmp
 #    RESET_ADMIN_PASSWORD=你想设置的新密码
 
 # 2. 重新构建/重启一次
-docker compose up -d --build
+docker compose up -d
 
 # 3. 查看日志确认已生效
 docker compose logs | grep RESET_ADMIN_PASSWORD
 
 # 4. 用 admin + 刚才设置的新密码登录
 
-# 5. 【重要】登录成功后,把 docker-compose.yml 里 RESET_ADMIN_PASSWORD 这一行删掉,再重新构建一次
-docker compose up -d --build
+# 5. 【重要】登录成功后,把 docker-compose.yml 里 RESET_ADMIN_PASSWORD 这一行删掉,再重新启动一次
+docker compose up -d
 ```
 
 ⚠️ 第5步千万别漏:这个环境变量只要还在,**每次重启容器 admin 密码都会被强制改回这个值**,删掉之后才能像平时一样自由改密码。这个方式只能重置 admin 账号,不会影响其他施工人员账号的密码(其他账号忘记密码,直接用 admin 登录后去"用户管理"重置即可)。
@@ -121,6 +132,11 @@ docker compose up -d --build
 因为 `./data` 中还包含无法通过页面导出的照片文件与加密密钥。
 
 ## 更新日志
+
+### v2.4(工程量对比录入优化 + 自动构建镜像)
+
+- 工程量对比"新增设备项":数量框不再预填 0,直接输入;编辑时聚焦自动全选;新增"保存并继续新增"(沿用分类/品牌/单位);弹窗内回车即保存。
+- 新增 GitHub Actions,推送后自动构建多架构镜像到 `ghcr.io/lu8010252/wdmp`,compose 默认直接拉镜像部署。
 
 ### v2.3(网线测距工具补充速率说明)
 

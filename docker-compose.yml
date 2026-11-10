@@ -1,14 +1,15 @@
 services:
   wdmp:
-    build: .
-    image: wdmp:latest
+    # 直接拉 GitHub Actions 构建好的镜像,不需要下载源码;想本地自己编译就把下面 image 注释掉、取消 build 的注释
+    image: ghcr.io/lu8010252/wdmp:latest
+    # build: .
     container_name: wdmp
     restart: unless-stopped
     ports:
       - "8080:8080"
     volumes:
       # ⚠️ 重要:./data 目录存放数据库、加密密钥、设备照片,是唯一需要持久化的目录。
-      # 更新部署(docker compose pull && docker compose up -d --build)不会影响这个挂载,数据会自动保留。
+      # 更新部署(docker compose pull && docker compose up -d)不会影响这个挂载,数据会自动保留。
       # 如果换机器/重装,务必先把这个目录完整复制过去再启动,否则数据会丢失。
       - ./data:/app/data
     environment:
@@ -16,8 +17,8 @@ services:
       - DATA_DIR=/app/data
       # 首次启动自动创建 admin 账号使用的初始密码,建议改成自己的强密码
       - ADMIN_INIT_PASSWORD=CHANGE_ME
-      # 忘记 admin 密码时,取消下面这行的注释并填入新密码,重新 up -d --build 一次即可强制重置;
-      # 重置成功、登录进去之后,请务必把这行删掉或重新注释掉,再重新构建一次,否则每次重启密码都会被强制改回这个值。
+      # 忘记 admin 密码时,取消下面这行的注释并填入新密码,重新 up -d 一次即可强制重置;
+      # 重置成功、登录进去之后,请务必把这行删掉或重新注释掉,再重新启动一次,否则每次重启密码都会被强制改回这个值。
       # - RESET_ADMIN_PASSWORD=your_new_password
       - TZ=Asia/Shanghai
       # 自动备份周期(小时),默认24;数据会自动存到 ./data/backups/ 下,默认保留最近7份。
