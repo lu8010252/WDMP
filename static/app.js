@@ -386,9 +386,9 @@ function statusTag(status) {
   return `<span class="tag ${map[status] || "tag-idle"}">${escapeHTML(status)}</span>`;
 }
 function diffTag(v, posLabel = "多装", negLabel = "漏装") {
-  if (v > 0) return `<span class="diff-pos">+${fmtNum(v)}(${posLabel})</span>`;
-  if (v < 0) return `<span class="diff-neg">${fmtNum(v)}(${negLabel})</span>`;
-  return `<span class="diff-zero">0(一致)</span>`;
+  if (v > 0) return `<span class="diff-pos">+${fmtNum(v)}<small>${posLabel}</small></span>`;
+  if (v < 0) return `<span class="diff-neg">${fmtNum(v)}<small>${negLabel}</small></span>`;
+  return `<span class="diff-zero">0<small>一致</small></span>`;
 }
 
 /* ---------------- 通用 Modal ---------------- */

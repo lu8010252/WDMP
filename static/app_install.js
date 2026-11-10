@@ -135,9 +135,9 @@ function paintInstallTable() {
   INSTALL_PAGE = clampPage(INSTALL_PAGE, all.length, INSTALL_PAGE_SIZE);
   const pageRows = paginate(all, INSTALL_PAGE, INSTALL_PAGE_SIZE);
   wrap.innerHTML = `
-    <div class="table-wrap"><table class="data" id="instTable">
+    <div class="table-wrap"><table class="data nw" id="instTable">
     <thead><tr>
-      <th>照片</th><th>总分类</th><th>子分类</th><th>安装位置</th><th>设备型号</th><th>数量</th><th>备注</th><th>更新</th><th></th>
+      <th>照片</th><th>总分类</th><th>子分类</th><th>安装位置</th><th>设备型号</th><th class="num">数量</th><th>备注</th><th>更新</th><th></th>
     </tr></thead>
     <tbody>
       ${pageRows.map((it) => `
@@ -145,12 +145,12 @@ function paintInstallTable() {
           <td>${it.photo_path ? `<img class="thumb" src="${it.photo_path}" onclick="window.open('${it.photo_path}')">` : (hasPerm("install") ? `<label class="btn btn-outline btn-sm" style="margin:0"><input type="file" accept="image/*" capture="environment" style="display:none" onchange="uploadInstallPhoto(${it.id}, this)">拍照</label>` : `<span style="color:var(--text-dim);font-size:12px;">无照片</span>`)}</td>
           <td>${escapeHTML(it.category_name)}</td>
           <td>${escapeHTML(it.sub_category_name)}</td>
-          <td>${escapeHTML(it.location)}</td>
-          <td><b>${escapeHTML(it.model)}</b></td>
-          <td class="mono"><b>${fmtNum(it.quantity)}</b></td>
+          <td class="name">${escapeHTML(it.location)}</td>
+          <td class="name"><b>${escapeHTML(it.model)}</b></td>
+          <td class="num"><b>${fmtNum(it.quantity)}</b></td>
           <td class="remark">${escapeHTML(it.remark)}</td>
           <td class="mono" style="font-size:11px;color:var(--text-dim)">${escapeHTML(it.updated_by)}<br>${escapeHTML(it.updated_at)}</td>
-          <td>
+          <td class="act">
             ${hasPerm("install") ? `<button class="btn btn-outline btn-sm" onclick="openInstallForm(${it.id})">编辑</button>` : ""}
             ${ME.role === "admin" ? `<button class="btn btn-danger btn-sm" onclick="deleteInstallRow(${it.id})">删除</button>` : ""}
           </td>

@@ -261,9 +261,9 @@ table.data tr:hover td { background: rgba(15,155,176,0.04); }
 .thumb { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; border: 1px solid var(--line); cursor: pointer; }
 .photo-preview { width: 100%; max-height: 260px; object-fit: contain; border-radius: var(--radius); border: 1px solid var(--line); margin-top: 8px; }
 
-.stat-row { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
-.stat-box { flex: 1; min-width: 120px; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; }
-.stat-box .v { font-size: 22px; font-weight: 700; color: var(--ink); font-family: var(--mono); }
+.stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.stat-box { min-width: 0; background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 14px; }
+.stat-box .v { font-size: 20px; font-weight: 700; color: var(--ink); font-family: var(--mono); }
 .stat-box .l { font-size: 12px; color: var(--text-dim); }
 
 .port-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap: 8px; }
@@ -325,3 +325,13 @@ table.data tr:hover td { background: rgba(15,155,176,0.04); }
 /* 备注列:给个最小宽度,避免表格列多时被挤成一字一行;差异标签不换行 */
 table.data td.remark { min-width: 150px; max-width: 260px; word-break: break-word; line-height: 1.5; }
 .diff-pos, .diff-neg, .diff-zero { white-space: nowrap; }
+
+/* 数据表:整行不换行,行高一致;宽度不够时在 .table-wrap 里横向滚动。型号/位置/备注列允许换行 */
+table.data.nw th, table.data.nw td { white-space: nowrap; }
+table.data.nw td.name { white-space: normal; min-width: 140px; max-width: 280px; }
+table.data.nw td.remark { white-space: normal; }
+table.data.nw th.num, table.data.nw td.num { text-align: right; font-variant-numeric: tabular-nums; padding-right: 16px; }
+table.data td.act { white-space: nowrap; }
+table.data td.act .btn + .btn { margin-left: 6px; }
+.diff-pos small, .diff-neg small, .diff-zero small { font-size: 11px; font-weight: 400; margin-left: 3px; opacity: .85; }
+table.data.nw td.remark { min-width: 110px; max-width: 220px; }

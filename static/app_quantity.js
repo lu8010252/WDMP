@@ -136,10 +136,10 @@ function paintQuantityTable() {
   const pageRows = paginate(rows, QTY_PAGE, QTY_PAGE_SIZE);
   const visibleDiffCols = QTY_DIFF_COLS.filter((c) => QTY_VISIBLE_DIFFS.has(c.key));
   wrap.innerHTML = `
-    <div class="table-wrap"><table class="data" id="qtyTable">
+    <div class="table-wrap"><table class="data nw" id="qtyTable">
     <thead><tr>
       <th>分类</th><th>设备型号</th><th>品牌</th><th>单位</th>
-      <th>图纸数量</th><th>清单数量</th><th>到货数量</th><th>安装数量</th>
+      <th class="num">图纸数量</th><th class="num">清单数量</th><th class="num">到货数量</th><th class="num">安装数量</th>
       ${visibleDiffCols.map((c) => `<th>${c.label}</th>`).join("")}
       <th>备注</th><th>更新</th><th></th>
     </tr></thead>
@@ -147,17 +147,17 @@ function paintQuantityTable() {
       ${pageRows.map((r) => `
         <tr>
           <td>${escapeHTML(r.category)}</td>
-          <td><b>${escapeHTML(r.device_name)}</b></td>
+          <td class="name"><b>${escapeHTML(r.device_name)}</b></td>
           <td>${escapeHTML(r.brand)}</td>
           <td>${escapeHTML(r.unit)}</td>
-          <td class="mono">${fmtNum(r.drawing_qty)}</td>
-          <td class="mono">${fmtNum(r.list_qty)}</td>
-          <td class="mono">${fmtNum(r.arrival_qty)}</td>
-          <td class="mono"><b>${fmtNum(r.actual_qty)}</b></td>
+          <td class="num">${fmtNum(r.drawing_qty)}</td>
+          <td class="num">${fmtNum(r.list_qty)}</td>
+          <td class="num">${fmtNum(r.arrival_qty)}</td>
+          <td class="num"><b>${fmtNum(r.actual_qty)}</b></td>
           ${visibleDiffCols.map((c) => `<td>${diffTag(r[c.key], c.posText, c.negText)}</td>`).join("")}
           <td class="remark">${escapeHTML(r.remark)}</td>
           <td class="mono" style="font-size:11px;color:var(--text-dim)">${escapeHTML(r.updated_by)}<br>${escapeHTML(r.updated_at)}</td>
-          <td>
+          <td class="act">
             ${hasPerm("quantity") ? `<button class="btn btn-outline btn-sm" onclick="openQuantityForm(${r.id})">编辑</button>` : ""}
             ${ME.role === "admin" ? `<button class="btn btn-danger btn-sm" onclick="deleteQuantityRow(${r.id})">删除</button>` : ""}
           </td>
