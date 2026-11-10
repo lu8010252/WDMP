@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
@@ -20,6 +21,52 @@ func registerUserRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("PUT /api/users/{id}/password", requireAdmin(resetUserPassword))
 	mux.HandleFunc("PUT /api/users/{id}/permissions", requireAdmin(updateUserPermissions))
 	mux.HandleFunc("DELETE /api/users/{id}", requireAdmin(deleteUser))
+	mux.HandleFunc("PUT /api/me/password", requireAuth(changeOwnPassword))
+}
+
+// changeOwnPassword 让用户自己改密码(之前只有管理员能重置,普通用户拿到初始密码后没法自己换)
+func changeOwnPassword(w http.ResponseWriter, r *http.Request) {
+	s := sessionFromCtx(r)
+	var body struct {
+		Old string `json:"old_password"`
+		New string `json:"new_password"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		writeErr(w, 400, "请求格式错误")
+		return
+	}
+	if len(body.New) < 6 {
+		writeErr(w, 400, "新密码至少需要6位")
+		return
+	}
+	key := "chpw|" + fmt.Sprint(s.UserID)
+	if locked, remain := checkLoginLocked(key); locked {
+		writeErr(w, http.StatusTooManyRequests, fmt.Sprintf("旧密码连续输错次数过多,请 %d 秒后再试", remain))
+		return
+	}
+	var hash string
+	if err := db.conn.QueryRow(`SELECT password_hash FROM users WHERE id=?`, s.UserID).Scan(&hash); err != nil || !checkPassword(hash, body.Old) {
+		recordLoginFail(key)
+		writeErr(w, 400, "旧密码不正确")
+		return
+	}
+	recordLoginSuccess(key)
+	nh, err := hashPassword(body.New)
+	if err != nil {
+		writeErr(w, 500, "密码加密失败")
+		return
+	}
+	if _, err := db.conn.Exec(`UPDATE users SET password_hash=? WHERE id=?`, nh, s.UserID); err != nil {
+		writeErr(w, 500, err.Error())
+		return
+	}
+	keep := ""
+	if c, err := r.Cookie("sid"); err == nil {
+		keep = c.Value
+	}
+	destroyUserSessions(s.UserID, keep) // 其它设备上的旧登录全部下线,当前这个保留
+	logAudit(s, "update", "user", s.UserID, "password", "", "["+s.Username+"]修改了自己的密码")
+	writeJSON(w, map[string]any{"ok": true})
 }
 
 func listUsers(w http.ResponseWriter, r *http.Request) {
@@ -148,6 +195,7 @@ func resetUserPassword(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 500, err.Error())
 		return
 	}
+	destroyUserSessions(id, "")
 	logAudit(s, "update", "user", id, "password", "", "管理员重置了["+uname+"]的密码")
 	writeJSON(w, map[string]any{"ok": true})
 }
@@ -169,6 +217,7 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, 500, err.Error())
 		return
 	}
+	destroyUserSessions(id, "")
 	diffAndLog(s, "delete", "user", id, map[string]string{"username": uname}, nil)
 	writeJSON(w, map[string]any{"ok": true})
 }

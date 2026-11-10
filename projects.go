@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 type Project struct {
@@ -16,6 +17,7 @@ type Project struct {
 func registerProjectRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/projects", requireAuth(listProjects))
 	mux.HandleFunc("POST /api/projects", requireModule("projects", createProject))
+	mux.HandleFunc("PUT /api/projects/{id}", requireModule("projects", updateProject))
 	mux.HandleFunc("GET /api/projects/{id}/impact", requireAuth(projectImpact))
 	mux.HandleFunc("DELETE /api/projects/{id}", requireAdmin(deleteProject))
 }
@@ -55,6 +57,37 @@ func createProject(w http.ResponseWriter, r *http.Request) {
 	id, _ := res.LastInsertId()
 	p.ID = id
 	diffAndLog(s, "create", "project", id, nil, map[string]string{"name": p.Name, "area": p.Area})
+	writeJSON(w, p)
+}
+
+// updateProject 修改项目名称/区域(之前建错名字只能删掉重建,而删除会连带清空所有关联数据)
+func updateProject(w http.ResponseWriter, r *http.Request) {
+	s := sessionFromCtx(r)
+	id, err := pathID(r)
+	if err != nil {
+		writeErr(w, 400, "无效ID")
+		return
+	}
+	if !hasProjectAccess(s, id) {
+		writeErr(w, 403, "没有该项目的访问权限")
+		return
+	}
+	var old Project
+	if err := db.conn.QueryRow(`SELECT id,name,COALESCE(area,''),created_at FROM projects WHERE id=?`, id).Scan(&old.ID, &old.Name, &old.Area, &old.CreatedAt); err != nil {
+		writeErr(w, 404, "项目不存在")
+		return
+	}
+	var p Project
+	if err := json.NewDecoder(r.Body).Decode(&p); err != nil || strings.TrimSpace(p.Name) == "" {
+		writeErr(w, 400, "项目名称不能为空")
+		return
+	}
+	p.ID, p.Name, p.Area, p.CreatedAt = id, strings.TrimSpace(p.Name), strings.TrimSpace(p.Area), old.CreatedAt
+	if _, err := db.conn.Exec(`UPDATE projects SET name=?,area=? WHERE id=?`, p.Name, p.Area, id); err != nil {
+		writeErr(w, 500, err.Error())
+		return
+	}
+	diffAndLog(s, "update", "project", id, map[string]string{"name": old.Name, "area": old.Area}, map[string]string{"name": p.Name, "area": p.Area})
 	writeJSON(w, p)
 }
 

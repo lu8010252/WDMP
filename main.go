@@ -123,7 +123,13 @@ const maxRequestBodyBytes = 20 << 20 // 20MB
 
 func maxBodyMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		r.Body = http.MaxBytesReader(w, r.Body, maxRequestBodyBytes)
+		limit := int64(maxRequestBodyBytes)
+		if r.URL.Path == "/api/backup/restore" {
+			// 恢复备份要上传整个备份包(含照片),handler 里自己限制 500MB;
+			// 这里如果仍套 20MB,外层上限会先生效,导致稍大的备份根本传不上来
+			limit = 500 << 20
+		}
+		r.Body = http.MaxBytesReader(w, r.Body, limit)
 		next.ServeHTTP(w, r)
 	})
 }

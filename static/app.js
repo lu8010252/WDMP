@@ -158,6 +158,29 @@ function bindSubmitOnce(btn, handler) {
   });
 }
 
+document.getElementById("changePwBtn").addEventListener("click", () => {
+  openModal(`
+    <h2>修改我的密码</h2>
+    <div class="field"><label>旧密码</label><input id="cpOld" type="password" autocomplete="current-password"></div>
+    <div class="field"><label>新密码(至少6位)</label><input id="cpNew" type="password" autocomplete="new-password"></div>
+    <div class="field"><label>确认新密码</label><input id="cpNew2" type="password" autocomplete="new-password"></div>
+    <p style="color:var(--text-dim);font-size:12px;">修改后,该账号在其它设备上的登录会全部下线。</p>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" id="cpSaveBtn">保存</button>
+    </div>`);
+  bindSubmitOnce(document.getElementById("cpSaveBtn"), async () => {
+    const o = document.getElementById("cpOld").value, n = document.getElementById("cpNew").value, n2 = document.getElementById("cpNew2").value;
+    if (!o) { toast("请输入旧密码", "err"); return; }
+    if (n.length < 6) { toast("新密码至少6位", "err"); return; }
+    if (n !== n2) { toast("两次输入的新密码不一致", "err"); return; }
+    try {
+      await apiJSON("/me/password", "PUT", { old_password: o, new_password: n });
+      toast("密码已修改");
+      closeModal();
+    } catch (e) {}
+  });
+});
 document.getElementById("logoutBtn").addEventListener("click", async () => {
   await api("/logout", { method: "POST" });
   ME = null;
@@ -387,7 +410,7 @@ function openModal(html) {
   modal.addEventListener("keydown", (e) => {
     if (e.key !== "Enter" || e.isComposing || e.target.tagName !== "INPUT") return;
     const t = e.target.type;
-    if (t !== "text" && t !== "number") return;
+    if (t !== "text" && t !== "number" && t !== "password") return;
     const primary = modal.querySelector(".modal-actions .btn-primary");
     if (primary && !primary.disabled) { e.preventDefault(); primary.click(); }
   });

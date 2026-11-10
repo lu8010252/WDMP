@@ -34,6 +34,8 @@ var (
 // 应用进程收到的是明文 HTTP 请求,没法通过 r.TLS 自动判断,所以用环境变量显式开关。
 // 部署时只要外层配了 HTTPS,就设置 COOKIE_SECURE=true;纯内网/临时测试用 HTTP 访问则不要开,
 // 否则浏览器会拒绝在 HTTP 页面下写入这个 cookie,导致登录后立刻被当成"未登录"。
+var trustProxy = getenv("TRUST_PROXY", "false") == "true"
+
 var cookieSecure = getenv("COOKIE_SECURE", "false") == "true"
 
 // ---- 登录失败限流 ----
@@ -60,6 +62,18 @@ func loginAttemptKey(r *http.Request, username string) string {
 // clientIP 尽量取到真实客户端IP;如果部署在反代之后且信任 X-Forwarded-For,
 // 可以在这里改成优先读取该头,目前默认直接用连接的 RemoteAddr。
 func clientIP(r *http.Request) string {
+	// 部署在 Nginx/Caddy/1Panel 反代之后时,RemoteAddr 永远是反代的 IP,所有人共用一个登录限流桶,
+	// 有人输错 5 次就会把所有人都锁住。设置 TRUST_PROXY=true 后改读反代传来的真实 IP
+	// (只在确认 WDMP 端口只对反代开放时才开启,否则请求头可被伪造)。
+	if trustProxy {
+		if v := strings.TrimSpace(r.Header.Get("X-Real-IP")); v != "" {
+			return v
+		}
+		if v := r.Header.Get("X-Forwarded-For"); v != "" {
+			parts := strings.Split(v, ",") // 取最后一段:由最靠近本服务的可信反代追加,不易伪造
+			return strings.TrimSpace(parts[len(parts)-1])
+		}
+	}
 	ip := r.RemoteAddr
 	if idx := strings.LastIndex(ip, ":"); idx != -1 {
 		ip = ip[:idx]
@@ -155,6 +169,18 @@ func getSession(tok string) *Session {
 		return nil
 	}
 	return s
+}
+
+// destroyUserSessions 注销某个用户的所有会话(keepTok 除外),
+// 用于改密码/删除用户后让旧登录立即失效,而不是等 12 小时自然过期。
+func destroyUserSessions(uid int64, keepTok string) {
+	sessMu.Lock()
+	for k, v := range sessions {
+		if v.UserID == uid && k != keepTok {
+			delete(sessions, k)
+		}
+	}
+	sessMu.Unlock()
 }
 
 func destroySession(tok string) {

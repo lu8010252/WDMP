@@ -117,7 +117,7 @@ async function renderProjectsView() {
     <div id="projTableWrap"></div>
   `;
   if (hasPerm("projects")) {
-    document.getElementById("projAddBtn").addEventListener("click", openProjectForm);
+    document.getElementById("projAddBtn").addEventListener("click", () => openProjectForm());
   }
   await loadProjectsView();
 }
@@ -133,17 +133,19 @@ async function loadProjectsView() {
     <thead><tr><th>项目名称</th><th>区域</th><th>创建时间</th><th></th></tr></thead>
     <tbody>${PROJECTS.map((p) => `
       <tr><td><b>${escapeHTML(p.name)}</b></td><td>${escapeHTML(p.area)}</td><td class="mono">${escapeHTML(p.created_at)}</td>
-      <td>${ME.role === "admin" ? `<button class="btn btn-danger btn-sm" onclick="deleteProjectRow(${p.id})">删除</button>` : ""}</td></tr>
+      <td>${hasPerm("projects") ? `<button class="btn btn-outline btn-sm" onclick="openProjectForm(${p.id})">编辑</button>` : ""}
+      ${ME.role === "admin" ? `<button class="btn btn-danger btn-sm" onclick="deleteProjectRow(${p.id})">删除</button>` : ""}</td></tr>
     `).join("")}</tbody>
     </table></div>
   `;
 }
-function openProjectForm() {
+function openProjectForm(id) {
+  const p = id ? PROJECTS.find((x) => x.id === id) : null;
   openModal(`
-    <h2>新增项目</h2>
+    <h2>${p ? "编辑项目" : "新增项目"}</h2>
     <div class="grid2">
-      <div class="field"><label>项目名称 *</label><input id="fPName"></div>
-      <div class="field"><label>区域</label><input id="fPArea" placeholder="如: A栋/1-3层"></div>
+      <div class="field"><label>项目名称 *</label><input id="fPName" value="${escapeHTML(p?.name || "")}"></div>
+      <div class="field"><label>区域</label><input id="fPArea" value="${escapeHTML(p?.area || "")}" placeholder="如: A栋/1-3层"></div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeModal()">取消</button>
@@ -155,10 +157,11 @@ function openProjectForm() {
     const area = document.getElementById("fPArea").value.trim();
     if (!name) { toast("项目名称不能为空", "err"); return; }
     try {
-      await apiJSON("/projects", "POST", { name, area });
-      toast("新增成功");
+      if (id) await apiJSON("/projects/" + id, "PUT", { name, area });
+      else await apiJSON("/projects", "POST", { name, area });
+      toast(id ? "已保存" : "新增成功");
       closeModal();
-      loadProjectsView();
+      await loadProjectsView();
     } catch (e) {}
   });
 }

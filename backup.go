@@ -37,6 +37,7 @@ func registerBackupRoutes(mux *http.ServeMux, dataDir string) {
 	// 导出完整备份包:数据库 + 密码本加密密钥 + 设备照片,一起打进一个 .tar.gz,
 	// 避免只导出数据库导致密钥/照片丢失、事后解不开密码本或照片全部失效的问题。
 	mux.HandleFunc("GET /api/backup/download", requireAdmin(func(w http.ResponseWriter, r *http.Request) {
+		extendDeadlines(w, 30*time.Minute) // 服务器全局 30 秒写超时,备份包较大时会被中途截断
 		fname := "wdmp_backup_" + time.Now().Format("20060102_150405") + ".tar.gz"
 		w.Header().Set("Content-Disposition", "attachment; filename=\""+fname+"\"")
 		w.Header().Set("Content-Type", "application/gzip")
@@ -53,6 +54,7 @@ func registerBackupRoutes(mux *http.ServeMux, dataDir string) {
 	//   2. 旧格式纯 .db 文件(只恢复数据库,兼容升级前导出的备份)
 	// 格式通过文件内容的魔数自动识别,不依赖文件名/扩展名。
 	mux.HandleFunc("POST /api/backup/restore", requireAdmin(func(w http.ResponseWriter, r *http.Request) {
+		extendDeadlines(w, 30*time.Minute) // 上传大备份包同样不能被 30 秒读超时打断
 		r.Body = http.MaxBytesReader(w, r.Body, 500<<20) // 500MB 上限,留够设备照片较多时的余量
 		if err := r.ParseMultipartForm(20 << 20); err != nil {
 			writeErr(w, 400, "上传文件解析失败: "+err.Error())
@@ -124,6 +126,7 @@ func registerBackupRoutes(mux *http.ServeMux, dataDir string) {
 
 	// 下载某一份历史自动备份
 	mux.HandleFunc("GET /api/backup/history/{name}", requireAdmin(func(w http.ResponseWriter, r *http.Request) {
+		extendDeadlines(w, 30*time.Minute)
 		name := r.PathValue("name")
 		if !autoBackupNameRe.MatchString(name) {
 			writeErr(w, 400, "非法的文件名")

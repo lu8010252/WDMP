@@ -11,6 +11,7 @@ const QTY_DIFF_COLS = [
   { key: "diff_arrival", label: "到货-清单", posText: "到货超量", negText: "到货不足" },
   { key: "diff_installed", label: "安装-到货", posText: "超装(异常)", negText: "有货未装" },
 ];
+let QTY_KW = "", QTY_ONLY_DIFF = false;
 let QTY_VISIBLE_DIFFS = new Set(QTY_DIFF_COLS.map((c) => c.key));
 
 async function renderQuantityView() {
@@ -34,7 +35,11 @@ async function renderQuantityView() {
       ` : `<span style="color:var(--text-dim);font-size:12.5px;">只读模式,如需新增/编辑请联系管理员授权</span>`}
     </div>
     <div class="toolbar" style="padding-top:0;">
-      <span style="color:var(--text-dim);font-size:12.5px;">显示对比列:</span>
+      <input type="text" id="qtyKw" placeholder="搜索型号/品牌/备注" value="${escapeHTML(QTY_KW)}" style="width:170px;padding:6px 8px;border:1px solid var(--line);border-radius:4px;font-size:13px;">
+      <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;">
+        <input type="checkbox" id="qtyOnlyDiff" ${QTY_ONLY_DIFF ? "checked" : ""}>只看有差异的
+      </label>
+      <span style="color:var(--text-dim);font-size:12.5px;margin-left:10px;">显示对比列:</span>
       ${QTY_DIFF_COLS.map((c) => `
         <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;">
           <input type="checkbox" class="qtyDiffColToggle" value="${c.key}" ${QTY_VISIBLE_DIFFS.has(c.key) ? "checked" : ""}>${c.label}
@@ -57,6 +62,8 @@ async function renderQuantityView() {
     if (cb.checked) QTY_VISIBLE_DIFFS.add(cb.value); else QTY_VISIBLE_DIFFS.delete(cb.value);
     paintQuantityTable();
   }));
+  document.getElementById("qtyKw").addEventListener("input", (e) => { QTY_KW = e.target.value; QTY_PAGE = 1; paintQuantityTable(); });
+  document.getElementById("qtyOnlyDiff").addEventListener("change", (e) => { QTY_ONLY_DIFF = e.target.checked; QTY_PAGE = 1; paintQuantityTable(); });
   document.getElementById("qtyExportBtn").addEventListener("click", () => {
     window.location = API + "/export/quantity?project_id=" + (CUR_PROJECT || 0);
   });
@@ -97,6 +104,10 @@ function paintQuantityTable() {
   const subId = parseInt(document.getElementById("qtySubFilter")?.value) || 0;
   if (catId) rows = rows.filter((r) => r.category_id === catId);
   if (subId) rows = rows.filter((r) => r.sub_category_id === subId);
+  const kw = QTY_KW.trim().toLowerCase();
+  if (kw) rows = rows.filter((r) => [r.device_name, r.brand, r.remark, r.category].some((x) => (x || "").toLowerCase().includes(kw)));
+  // "有差异" 只看当前勾选显示的对比列,和表格上看到的保持一致
+  if (QTY_ONLY_DIFF) rows = rows.filter((r) => QTY_DIFF_COLS.some((c) => QTY_VISIBLE_DIFFS.has(c.key) && r[c.key] !== 0));
 
   const totalDrawing = rows.reduce((s, r) => s + r.drawing_qty, 0);
   const totalList = rows.reduce((s, r) => s + r.list_qty, 0);

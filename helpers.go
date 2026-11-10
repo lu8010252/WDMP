@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 )
 
 func writeJSON(w http.ResponseWriter, v any) {
@@ -45,4 +46,13 @@ func getenvInt(k string, def int) int {
 		return def
 	}
 	return n
+}
+
+// extendDeadlines 放宽当前请求的读/写超时(服务器全局只有 30 秒),
+// 用于备份下载、备份恢复这类传输时间可能很长的接口。
+func extendDeadlines(w http.ResponseWriter, d time.Duration) {
+	rc := http.NewResponseController(w)
+	t := time.Now().Add(d)
+	_ = rc.SetReadDeadline(t)
+	_ = rc.SetWriteDeadline(t)
 }
