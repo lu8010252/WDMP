@@ -155,7 +155,7 @@ function paintQuantityTable() {
           <td class="mono">${fmtNum(r.arrival_qty)}</td>
           <td class="mono"><b>${fmtNum(r.actual_qty)}</b></td>
           ${visibleDiffCols.map((c) => `<td>${diffTag(r[c.key], c.posText, c.negText)}</td>`).join("")}
-          <td>${escapeHTML(r.remark)}</td>
+          <td class="remark">${escapeHTML(r.remark)}</td>
           <td class="mono" style="font-size:11px;color:var(--text-dim)">${escapeHTML(r.updated_by)}<br>${escapeHTML(r.updated_at)}</td>
           <td>
             ${hasPerm("quantity") ? `<button class="btn btn-outline btn-sm" onclick="openQuantityForm(${r.id})">编辑</button>` : ""}

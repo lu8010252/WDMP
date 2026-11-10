@@ -64,7 +64,7 @@ function paintVaultTable() {
             <span class="pw-mask" id="pwmask-${d.id}">••••••••</span>
             <button class="copy-btn" onclick="revealAndCopy(${d.id})">一键复制</button>
           </td>
-          <td>${escapeHTML(d.remark)}</td>
+          <td class="remark">${escapeHTML(d.remark)}</td>
           <td class="mono" style="font-size:11px;color:var(--text-dim)">${escapeHTML(d.updated_by)}<br>${escapeHTML(d.updated_at)}</td>
           <td>
             <button class="btn btn-outline btn-sm" onclick="openVaultForm(${d.id})">编辑</button>

@@ -148,7 +148,7 @@ function paintInstallTable() {
           <td>${escapeHTML(it.location)}</td>
           <td><b>${escapeHTML(it.model)}</b></td>
           <td class="mono"><b>${fmtNum(it.quantity)}</b></td>
-          <td>${escapeHTML(it.remark)}</td>
+          <td class="remark">${escapeHTML(it.remark)}</td>
           <td class="mono" style="font-size:11px;color:var(--text-dim)">${escapeHTML(it.updated_by)}<br>${escapeHTML(it.updated_at)}</td>
           <td>
             ${hasPerm("install") ? `<button class="btn btn-outline btn-sm" onclick="openInstallForm(${it.id})">编辑</button>` : ""}
