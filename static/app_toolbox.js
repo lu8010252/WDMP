@@ -18,6 +18,7 @@ const TOOLBOX_TABS = [
   { id: "cable", label: "线材粗算", sub: "网线箱数 / 预留" },
   { id: "password", label: "密码生成", sub: "设备激活强密码" },
   { id: "rtsp", label: "RTSP编码", sub: "特殊字符URL编码" },
+  { id: "rack", label: "机柜布设", sub: "拖拽排布 / 导出图" },
 ];
 
 async function renderToolboxView() {
@@ -61,6 +62,7 @@ function renderToolboxTabBody() {
     cable: renderCableTool,
     password: renderPasswordTool,
     rtsp: renderRTSPTool,
+    rack: renderRackTool,
   };
   (renderers[TOOLBOX_TAB] || renderIPTool)();
 }

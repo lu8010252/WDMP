@@ -15,7 +15,7 @@
 ```
 .
 ├── main.go / db.go / auth.go ...   # Go 后端源码(按模块拆分)
-├── static/                         # 前端静态资源(index.html / style.css / app*.js)
+├── static/                         # 前端静态资源(index.html / style.css / app*.js,app_rack.js 为机柜布设)
 ├── Dockerfile                      # 多阶段构建,最终基于 alpine
 ├── .github/workflows/docker.yml    # 推送后自动构建并发布镜像到 ghcr
 ├── docker-compose.yml              # 附带内存限制与数据卷映射
@@ -132,6 +132,11 @@ docker compose up -d
 因为 `./data` 中还包含无法通过页面导出的照片文件与加密密钥。
 
 ## 更新日志
+
+### v2.5(工具箱新增「机柜布设」)
+
+- 工具箱第 16 个工具:19 英寸机柜按 U 位排布(1U 在最底部),从设备目录拖拽(或点一下自动放入)到机柜,已放设备可拖动换位、用方向键按钮微调;同一 U 内支持全宽 / 1/2 宽 / 1/3 宽横向混排;可自定义设备并存入"我的设备";导出 PNG 布局图、导出/复制 Markdown 布设表。数据仅存在当前浏览器本地,不占用数据库。
+- 功能思路参考 [bruce609685-collab/RackDraw](https://github.com/bruce609685-collab/RackDraw)(Apache-2.0),本模块为 JS 独立重新实现,未使用其源码。
 
 ### v2.4(工程量对比录入优化 + 自动构建镜像)
 

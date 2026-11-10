@@ -282,3 +282,37 @@ table.data tr:hover td { background: rgba(15,155,176,0.04); }
   .label-sheet { grid-template-columns: 1fr; }
   .nav-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 55; }
 }
+
+/* ---------- 机柜布设 ---------- */
+.rack-layout { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+.rack-catalog { width: 250px; flex: 0 0 250px; max-height: 80vh; overflow-y: auto; }
+.rack-main { flex: 1; min-width: 360px; }
+.rack-h { font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+.rack-tip { font-size: 12px; color: var(--text-dim); font-weight: 400; }
+.rack-cat { font-size: 12.5px; color: var(--text-dim); margin: 10px 0 4px; display: flex; align-items: center; gap: 6px; }
+.rack-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.rack-cat-item { display: flex; justify-content: space-between; align-items: center; gap: 6px; padding: 5px 8px; margin-bottom: 4px; font-size: 13px;
+  background: #fff; border: 1px solid var(--line); border-left-width: 4px; border-radius: 4px; cursor: grab; user-select: none; }
+.rack-cat-item:hover { border-color: var(--cyan); }
+.rack-meta { font-size: 11px; color: var(--text-dim); white-space: nowrap; }
+.rack-x { border: 0; background: none; color: var(--red); cursor: pointer; font-size: 16px; line-height: 1; padding: 0 2px; }
+.rack-custom { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
+.rack-custom input, .rack-custom select, .rack-selpanel input, .rack-selpanel select, #rackName, #rackUnits { padding: 6px 8px; border: 1px solid var(--line); border-radius: 4px; font-size: 13px; background: #fff; }
+.rack-row { display: flex; gap: 6px; }
+.rack-row input { width: 52px; }
+.rack-row select { flex: 1; min-width: 0; }
+.rack-selpanel { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 12px; margin-bottom: 10px; }
+.rack-selpanel label { font-size: 13px; color: var(--text-dim); display: flex; align-items: center; gap: 4px; }
+.rack-frame { overflow-x: auto; }
+.rack-wrap { display: flex; width: 560px; max-width: 100%; margin: 0 auto; }
+.rack-nums { width: 28px; flex: 0 0 28px; font-size: 11px; color: var(--text-dim); font-family: var(--mono); text-align: center; line-height: 26px; }
+.rack-body { position: relative; flex: 1; border: 3px solid var(--ink); background: #eef0f4;
+  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 25px, #cfd4dc 25px, #cfd4dc 26px); }
+.rack-item { position: absolute; box-sizing: border-box; border: 1px solid rgba(255,255,255,0.6); border-radius: 2px; color: #fff; font-size: 12px;
+  display: flex; align-items: center; justify-content: center; text-align: center; cursor: grab; overflow: hidden; user-select: none; }
+.rack-item span { padding: 0 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rack-item.sel { outline: 3px solid var(--amber); outline-offset: -2px; z-index: 2; }
+.rack-ghost { position: absolute; pointer-events: none; z-index: 3; border-radius: 2px; }
+.rack-ghost.ok { background: rgba(30,142,90,0.35); border: 2px dashed var(--green); }
+.rack-ghost.bad { background: rgba(192,57,43,0.3); border: 2px dashed var(--red); }
+@media (max-width: 860px) { .rack-catalog { width: 100%; flex-basis: 100%; max-height: 260px; } .rack-main { min-width: 0; width: 100%; } }
