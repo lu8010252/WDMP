@@ -160,8 +160,11 @@ function paintQuantityTable() {
     (sz) => { QTY_PAGE_SIZE = sz; QTY_PAGE = 1; paintQuantityTable(); });
 }
 
-function openQuantityForm(id) {
-  const row = id ? QTY_CACHE.find((r) => r.id === id) : null;
+// preset:连续新增时沿用上一条的分类/品牌/单位,免得每条都重选
+function openQuantityForm(id, preset) {
+  const row = id ? QTY_CACHE.find((r) => r.id === id) : (preset || null);
+  // 新增时数量留空(placeholder 显示 0),直接输入即可;编辑时显示原值,聚焦自动全选
+  const qv = (v) => (id ? (v ?? 0) : "");
   openModal(`
     <h2>${id ? "编辑设备项" : "新增设备项"}</h2>
     <div class="grid2">
@@ -170,21 +173,22 @@ function openQuantityForm(id) {
       <div class="field grid1"><label>设备型号 *</label><input id="fName" value="${escapeHTML(row?.device_name || "")}" placeholder="需与安装数量登记里的设备型号一致才能自动同步"></div>
       <div class="field"><label>设备品牌</label><input id="fBrand" value="${escapeHTML(row?.brand || "")}"></div>
       <div class="field"><label>单位</label><input id="fUnit" value="${escapeHTML(row?.unit || "台")}"></div>
-      <div class="field"><label>图纸数量</label><input id="fDrawing" type="number" step="any" value="${row?.drawing_qty ?? 0}"></div>
-      <div class="field"><label>清单数量</label><input id="fList" type="number" step="any" value="${row?.list_qty ?? 0}"></div>
-      <div class="field"><label>到货数量</label><input id="fArrival" type="number" step="any" value="${row?.arrival_qty ?? 0}"></div>
-      <div class="field"><label>安装数量</label><input id="fActual" type="number" step="any" value="${row?.actual_qty ?? 0}"></div>
+      <div class="field"><label>图纸数量</label><input id="fDrawing" type="number" inputmode="decimal" step="any" min="0" placeholder="0" value="${qv(row?.drawing_qty)}"></div>
+      <div class="field"><label>清单数量</label><input id="fList" type="number" inputmode="decimal" step="any" min="0" placeholder="0" value="${qv(row?.list_qty)}"></div>
+      <div class="field"><label>到货数量</label><input id="fArrival" type="number" inputmode="decimal" step="any" min="0" placeholder="0" value="${qv(row?.arrival_qty)}"></div>
+      <div class="field"><label>安装数量</label><input id="fActual" type="number" inputmode="decimal" step="any" min="0" placeholder="0" value="${qv(row?.actual_qty)}"></div>
       <div class="field grid1"><label>备注</label><input id="fRemark" value="${escapeHTML(row?.remark || "")}"></div>
     </div>
     <p style="color:var(--text-dim);font-size:12px;margin-top:4px;">提示:如果"现场安装数量登记"模块里有相同 总分类+子分类+设备型号 的记录,安装数量会被自动同步覆盖。</p>
     ${!mainCategories().length ? `<p style="color:var(--red);font-size:12.5px;">暂无可选分类,请先到"分类管理"页面新增总分类</p>` : ""}
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeModal()">取消</button>
+      ${id ? "" : `<button class="btn btn-cyan" id="qtySaveNextBtn">保存并继续新增</button>`}
       <button class="btn btn-primary" id="qtySaveBtn">保存</button>
     </div>
   `);
   bindCategoryCascade("fCategory", "fSubCategory", null, true);
-  bindSubmitOnce(document.getElementById("qtySaveBtn"), async () => {
+  const saveQty = async (keepOpen) => {
     const data = {
       project_id: CUR_PROJECT,
       category_id: parseInt(document.getElementById("fCategory").value) || 0,
@@ -204,10 +208,18 @@ function openQuantityForm(id) {
       if (id) await apiJSON("/quantity/" + id, "PUT", data);
       else await apiJSON("/quantity", "POST", data);
       toast("保存成功");
-      closeModal();
       loadQuantity();
+      if (keepOpen) {
+        openQuantityForm(null, { category_id: data.category_id, sub_category_id: data.sub_category_id, brand: data.brand, unit: data.unit });
+      } else {
+        closeModal();
+      }
     } catch (e) {}
-  });
+  };
+  bindSubmitOnce(document.getElementById("qtySaveBtn"), () => saveQty(false));
+  bindSubmitOnce(document.getElementById("qtySaveNextBtn"), () => saveQty(true));
+  // 新增时光标直接落在设备型号上;型号 → 数量一路 Tab/回车
+  document.getElementById("fName")?.focus();
 }
 
 async function deleteQuantityRow(id) {

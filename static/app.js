@@ -377,6 +377,20 @@ function openModal(html) {
     if (e.target.id === "modalMask") closeModal();
   });
   document.getElementById("modalClose").addEventListener("click", closeModal);
+  // 弹窗里的数字框:聚焦时自动全选(已有内容也不用手动删),
+  // 单行输入框按回车相当于点主按钮(保存/确认),不用再伸手去点
+  const modal = root.querySelector(".modal");
+  modal.addEventListener("focusin", (e) => {
+    const t = e.target;
+    if (t.tagName === "INPUT" && t.type === "number") setTimeout(() => { try { t.select(); } catch (_) {} }, 0);
+  });
+  modal.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" || e.isComposing || e.target.tagName !== "INPUT") return;
+    const t = e.target.type;
+    if (t !== "text" && t !== "number") return;
+    const primary = modal.querySelector(".modal-actions .btn-primary");
+    if (primary && !primary.disabled) { e.preventDefault(); primary.click(); }
+  });
 }
 function closeModal() {
   document.getElementById("modalRoot").innerHTML = "";
