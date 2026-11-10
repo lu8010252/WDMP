@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>弱电工程综合管理与运维平台</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<div class="login-wrap" id="loginView">
+  <div class="login-card" id="loginCard">
+    <p class="login-title">弱电工程综合管理与运维平台</p>
+    <p class="login-sub">WDMP · 轻量化施工现场管理系统</p>
+    <div class="field">
+      <label>用户名</label>
+      <input id="loginUser" type="text" autocomplete="username" placeholder="请输入用户名">
+    </div>
+    <div class="field">
+      <label>密码</label>
+      <input id="loginPass" type="password" autocomplete="current-password" placeholder="请输入密码">
+    </div>
+    <button class="btn btn-primary" id="loginBtn">登 录</button>
+    <div class="login-err" id="loginErr"></div>
+    <div class="login-hint">默认管理员账号 admin,首次登录后请及时修改密码</div>
+    <div class="login-switch"><a href="javascript:void(0)" id="showRegisterBtn">还没有账号?点此注册</a></div>
+    <div class="login-signature">
+      <div class="sf-name">路健</div>
+      <div class="sf-contact">17709650717(同微信)</div>
+    </div>
+  </div>
+  <div class="login-card" id="registerCard" style="display:none;">
+    <p class="login-title">注册新账号</p>
+    <p class="login-sub">注册后需管理员分配权限才能使用</p>
+    <div class="field">
+      <label>用户名</label>
+      <input id="regUser" type="text" autocomplete="username" placeholder="2~32个字符">
+    </div>
+    <div class="field">
+      <label>密码</label>
+      <input id="regPass" type="password" autocomplete="new-password" placeholder="至少6位">
+    </div>
+    <div class="field">
+      <label>确认密码</label>
+      <input id="regPass2" type="password" autocomplete="new-password" placeholder="再输入一遍密码">
+    </div>
+    <button class="btn btn-primary" id="registerBtn">注 册</button>
+    <div class="login-err" id="registerErr"></div>
+    <div class="login-hint" id="registerHint">注册成功后,账号还没有任何模块权限,请联系管理员在"用户管理"里分配后再登录使用。</div>
+    <div class="login-switch"><a href="javascript:void(0)" id="showLoginBtn">已有账号?返回登录</a></div>
+  </div>
+</div>
+
+<div id="app">
+  <div class="topbar">
+    <button class="hamburger" id="hamburgerBtn">&#9776;</button>
+    <div class="brand"><span class="dot"></span>弱电运维平台</div>
+    <div class="searchbox">
+      <span class="icon">&#128269;</span>
+      <input id="globalSearch" type="text" placeholder="搜索 IP / 型号 / 位置 / 线缆号...">
+      <div class="search-results" id="searchResults" style="display:none;"></div>
+    </div>
+    <div class="spacer"></div>
+    <div class="userchip">
+      <span class="uname" id="curUser"></span>
+      <span class="role-badge" id="curRole"></span>
+      <button class="btn btn-outline btn-sm" id="logoutBtn" style="color:#fff;border-color:rgba(255,255,255,0.35)">退出</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="nav-backdrop" id="navBackdrop" style="display:none;"></div>
+    <div class="sidenav" id="sideNav">
+      <div class="nav-item" data-view="dashboard"><span class="n">00</span>总览看板</div>
+      <div class="nav-item" data-view="quantity"><span class="n">01</span>工程量对比</div>
+      <div class="nav-item" data-view="install"><span class="n">02</span>安装数量登记</div>
+      <div class="nav-item" data-view="devices"><span class="n">03</span>设备台账</div>
+      <div class="nav-item" data-view="categories"><span class="n">04</span>分类管理</div>
+      <div class="nav-item" data-view="vault"><span class="n">05</span>核心密码本</div>
+      <div class="nav-item" data-view="network"><span class="n">06</span>网络与交换机</div>
+      <div class="nav-item" data-view="toolbox"><span class="n">07</span>工具箱</div>
+      <div class="nav-item" data-view="audit"><span class="n">08</span>修改日志</div>
+      <div class="nav-item" data-view="projects"><span class="n">09</span>项目管理</div>
+      <div class="nav-item" data-view="users" id="navUsers"><span class="n">10</span>用户管理</div>
+      <div class="nav-item" data-view="backup"><span class="n">11</span>数据备份</div>
+      <div class="sidenav-footer">
+        <div class="sf-name">路健</div>
+        <div class="sf-contact">17709650717(同微信)</div>
+      </div>
+    </div>
+
+    <div class="content" id="content">
+      <!-- 各页面由 app.js 动态渲染 -->
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+<div id="modalRoot"></div>
+
+<script src="/vendor/qrcode.min.js"></script>
+<script src="/app.js"></script>
+<script src="/app_dashboard.js"></script>
+<script src="/app_categories.js"></script>
+<script src="/app_quantity.js"></script>
+<script src="/app_install.js"></script>
+<script src="/app_devices.js"></script>
+<script src="/app_vault.js"></script>
+<script src="/app_network.js"></script>
+<script src="/app_toolbox.js"></script>
+<script src="/app_audit.js"></script>
+<script src="/app_init.js"></script>
+</body>
+</html>

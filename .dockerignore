@@ -1,0 +1,7 @@
+data/
+*.db
+*.db-*
+.git
+.gitignore
+*.log
+/tmp
